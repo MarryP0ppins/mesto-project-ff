@@ -1,35 +1,34 @@
-const handleEscKeyUp = (event) => {
-  if (event.key === "Escape") {
-    const openedModal = document.querySelector(".popup_is-opened");
-    closeModal(openedModal);
+function closeModalWindowEscape(event) {
+  if (event.key === 'Escape') {
+    closeModalWindow(document.querySelector('.popup_is-opened'));
   }
-};
-
-//функция открытия окна
-export function openModal(popup) {
-  popup.classList.add("popup_is-animated");
-  setTimeout(() => {
-    popup.classList.add("popup_is-opened");
-  }, 1); 
-  document.addEventListener("keydown", handleEscKeyUp);
+}
+//открытие модального окна
+export function openModalWindow(modalWindow) {
+  modalWindow.classList.add('popup_is-opened');
+  document.addEventListener('keyup', closeModalWindowEscape);
+  document.addEventListener('mousedown', overlayMouseDown);
+  document.addEventListener('mouseup', overlayMouseUp);
 }
 
-//функция закрытия окна
-export function closeModal(popup) {
-  popup.classList.remove("popup_is-opened");
-  document.removeEventListener("keydown", handleEscKeyUp);
+export function closeModalWindow(modalWindow) {
+  modalWindow.classList.remove('popup_is-opened');
+  document.removeEventListener('keyup', closeModalWindowEscape);
+  document.removeEventListener('mousedown', overlayMouseDown);
+  document.removeEventListener('mouseup', overlayMouseUp);
 }
 
-//функция чтобы добавить слушателя для попата
-export function addListenerPopup(popup) {
-  const buttonClosePopup = popup.querySelector(".popup__close");
-  buttonClosePopup.addEventListener("click", () => {
-    closeModal(popup);
-  });
 
-  popup.addEventListener("mousedown", (event) => {
-    if (event.target.classList.contains("popup")) {
-      closeModal(popup);
-    }
-  });
+
+function overlayMouseDown(event) {
+  if (!event.target.classList.contains('popup_is-opened')) return;
+  event.target.isClickOnThis = true;
+}
+
+function overlayMouseUp(event) {
+  if (event.target.isClickOnThis && event.target.classList.contains('popup_is-opened')) {
+    event.preventDefault();
+    closeModalWindow(event.target);
+  }
+  event.target.isClickOnThis = false;
 }
