@@ -1,29 +1,15 @@
-import '../pages/index.css'; 
+import '../pages/index.css';
 
-import {
-  createCard,
-  deleteCard,
-  likeCardListener,
-
-} from '../components/card.js';
-
-import {
-  closeModalWindow,
-  openModalWindow,
-} from '../components/modal.js';
-
-import {
-  enableValidation,
-  clearValidation, 
-} from '../components/validation.js';
-
+import { createCard, deleteCard, likeCardListener } from '../components/card.js';
+import { closeModal, openModal } from '../components/modal.js';
+import { enableValidation, clearValidation } from '../components/validation.js';
 import {
   editUserInfo,
   createNewCard,
   changeAvatar,
   getUserInfo,
   getAllCards,
-} from '../components/api.js'
+} from '../components/api.js';
 
 
 //DOM узлы
@@ -47,6 +33,8 @@ const closeImgModal = document.querySelector('.popup_type_image .popup__close');
 const closeAvatarModal = document.querySelector('.popup_type_edit_avatar .popup__close');
 
 const openWindowImgModal = document.querySelector('.popup_type_image');
+const openWindowImgModalImage = openWindowImgModal.querySelector('.popup__image');
+const openWindowImgModalCaption = openWindowImgModal.querySelector('.popup__caption');
 const formNewPlaceElement = document.querySelector('[name="new-place"]');
 const formEditProfileElement = document.querySelector('[name="edit-profile"]');
 const formModalEditAvatar = document.querySelector('[name="edit-avatar"]');
@@ -69,57 +57,55 @@ const validationConfig = {
   inactiveButtonClass: 'popup__button_inactive',
   inputErrorClass: 'popup__input_type_error',
   errorClass: 'form__input-error_active'
-}; 
+};
 
 enableValidation(validationConfig);
 
-function openImageModalWindow(event){
-  openWindowImgModal.querySelector('.popup__image').removeAttribute('src');
+function openImageModalWindow(textContent) {
+  openWindowImgModalImage.removeAttribute('src');
 
-  openWindowImgModal.querySelector('.popup__caption').textContent =
-    event.target.parentElement.querySelector('.card__title').textContent;
+  openWindowImgModalCaption.textContent = textContent;
 
-  openWindowImgModal.querySelector('.popup__image').setAttribute('src', event.target.src);
-  openWindowImgModal.querySelector('.popup__image').setAttribute('alt', event.target.alt);
-  openModalWindow(openWindowImgModal)
+  openWindowImgModalImage.setAttribute('src', event.target.src);
+  openWindowImgModalImage.setAttribute('alt', event.target.alt);
+  openModal(openWindowImgModal)
 }
 
 function handleFormEditProfileSubmit(evt) {
-  evt.preventDefault(); 
+  evt.preventDefault();
 
   const nameInputValue = editModalInputName.value;
-  const jobInputValue  = editModalInputDescrition.value;
+  const jobInputValue = editModalInputDescrition.value;
   const submitButton = evt.currentTarget.querySelector('.popup__button')
   submitButton.textContent = 'Сохранение...'
   editUserInfo(nameInputValue, jobInputValue).then((result) => {
     profileTitle.textContent = result.name;
-    profileDescription.textContent = result.about; 
-    closeModalWindow(editModalWindow)
+    profileDescription.textContent = result.about;
+    closeModal(editModalWindow)
   })
-  .catch((err) => {
-    console.log(err); 
-  })
-  .finally(() => {
-    submitButton.textContent = 'Сохранить'
-  });
+    .catch((err) => {
+      console.error(err);
+    })
+    .finally(() => {
+      submitButton.textContent = 'Сохранить'
+    });
 }
 
 function handleFormNewPlaceSubmit(evt) {
   evt.preventDefault();
 
   const cardNameInputValue = editModalInputCardName.value;
-  const typeUrlInputValue  = editModalInputTypeUrl.value;
+  const typeUrlInputValue = editModalInputTypeUrl.value;
   const submitButton = evt.currentTarget.querySelector('.popup__button')
   submitButton.textContent = 'Сохранение...'
   createNewCard(cardNameInputValue, typeUrlInputValue)
     .then(res => {
       placesList.prepend(renderCard(res, _meId));
       formNewPlaceElement.reset()
-      closeModalWindow(newCardModalWindow)
-      clearValidation(formNewPlaceElement, validationConfig);
+      closeModal(newCardModalWindow)
     })
     .catch((err) => {
-      console.log(err); 
+      console.error(err);
     })
     .finally(() => {
       submitButton.textContent = 'Сохранить'
@@ -127,7 +113,7 @@ function handleFormNewPlaceSubmit(evt) {
 }
 
 
-function editAvatarSubmit(evt){
+function editAvatarSubmit(evt) {
   evt.preventDefault();
 
   const urlAvatar = editModalInputAvatarUrl.value;
@@ -137,30 +123,29 @@ function editAvatarSubmit(evt){
     .then(res => {
       profileAvatar.style.backgroundImage = `url(${res.avatar})`
       formModalEditAvatar.reset()
-      closeModalWindow(newAvatarModal);
-      clearValidation(formModalEditAvatar, validationConfig);
+      closeModal(newAvatarModal);
     })
     .catch((err) => {
-      console.log(err); 
+      console.error(err);
     })
     .finally(() => {
       submitButton.textContent = 'Сохранить'
     })
 }
 
-editModalAvatarButton.addEventListener('click', function(){
-  openModalWindow(newAvatarModal);
+editModalAvatarButton.addEventListener('click', function () {
+  openModal(newAvatarModal);
 })
 
-editModalOpen.addEventListener('click', function(){
+editModalOpen.addEventListener('click', function () {
   editModalInputName.value = profileTitle.textContent;
   editModalInputDescrition.value = profileDescription.textContent;
   clearValidation(formEditProfileElement, validationConfig);
-  openModalWindow(editModalWindow);
+  openModal(editModalWindow);
 })
 
-newCardModalOpen.addEventListener('click', function(){
-  openModalWindow(newCardModalWindow);
+newCardModalOpen.addEventListener('click', function () {
+  openModal(newCardModalWindow);
 });
 
 formModalEditAvatar.addEventListener('submit', editAvatarSubmit);
@@ -170,36 +155,30 @@ formEditProfileElement.addEventListener('submit', handleFormEditProfileSubmit);
 formNewPlaceElement.addEventListener('submit', handleFormNewPlaceSubmit);
 
 
-closeAvatarModal.addEventListener('click', function(){
-  closeModalWindow(newAvatarModal);
+closeAvatarModal.addEventListener('click', function () {
+  closeModal(newAvatarModal);
 });
 
-closeEditModal.addEventListener('click', function(){
-  closeModalWindow(editModalWindow);
+closeEditModal.addEventListener('click', function () {
+  closeModal(editModalWindow);
 })
 
-closeNewCardModal.addEventListener('click', function(){
-  closeModalWindow(newCardModalWindow);
+closeNewCardModal.addEventListener('click', function () {
+  closeModal(newCardModalWindow);
 });
 
-closeImgModal.addEventListener('click', function(){
-  closeModalWindow(openWindowImgModal);
+closeImgModal.addEventListener('click', function () {
+  closeModal(openWindowImgModal);
 })
 
 
 Promise.all([getAllCards(), getUserInfo()])
-.then((results) => {
+  .then(([cards, userInfo]) => {
+    profileTitle.textContent = userInfo.name;
+    profileDescription.textContent = userInfo.about;
+    profileAvatar.style.backgroundImage = `url('${userInfo.avatar}')`;
+    _meId = userInfo._id;
 
-  profileTitle.textContent = results[1]['name'];
-  profileDescription.textContent = results[1]['about'];
-  profileAvatar.style.backgroundImage = `url('${results[1]['avatar']}')`;
-  _meId = results[1]._id;
-
-  results[0].forEach((card) => {
-    placesList.append(renderCard(card, _meId))
+    cards.forEach((card) => placesList.append(renderCard(card, _meId)));
   })
-
-})
-.catch((err) => {
-  console.log(err); 
-})
+  .catch((err) => console.error(err));

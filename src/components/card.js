@@ -1,88 +1,55 @@
-import {
-  likeCardDev,
-  likeCardDevDel,
-  removeCard
-} from '../components/api.js'
-//Темплейт карточки
+import { likeCardDev, likeCardDevDel, removeCard } from '../components/api.js';
+
 const cardTemplate = document.querySelector('#card-template').content;
 const placeElement = cardTemplate.querySelector(".places__item");
 
-//Функция создания карточки
+// Функция создания карточки
 export function createCard(cardParams, meId, deleteFunction, likeFunction, openImageFunction) {
   const cardElement = placeElement.cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
   const likeButton = cardElement.querySelector('.card__like-button');
   const deleteButton = cardElement.querySelector('.card__delete-button');
+  const cardTitle = cardElement.querySelector('.card__title');
+  const likeCounter = cardElement.querySelector('.card__like-quantity');
 
+  cardTitle.textContent = cardParams.name;
+  cardImage.src = cardParams.link;
+  cardImage.alt = cardParams.name;
 
-
-  if (cardParams.owner._id == meId) {
+  // Показываем кнопку удаления, если карточка пользователя
+  if (cardParams.owner._id === meId) {
     deleteButton.classList.add('card__delete-button-visible');
   }
 
-  cardElement.querySelector('.card__like-quantity').textContent = cardParams.likes.length;
+  // Лайки
+  likeCounter.textContent = cardParams.likes.length;
+  if (cardParams.likes.some((like) => like._id === meId)) {
+    likeButton.classList.add('card__like-button_is-active');
+  }
 
-  if (meId && cardParams.likes.some((like) => {
-    return like._id == meId;
-  })
-  ) {
-    likeCard(likeButton)
-  };
-  deleteButton.addEventListener('click', deleteFunction);
-  deleteButton.targetElement = cardElement;
+  // Обработчики событий
+  deleteButton.addEventListener('click', () => deleteFunction(cardParams._id, cardElement));
+  likeButton.addEventListener('click', () => likeFunction(cardParams._id, likeButton, likeCounter));
+  cardImage.addEventListener('click', () => openImageFunction(cardParams.name, cardParams.link));
 
-  cardElement.querySelector('.card__title').textContent = cardParams.name;
-
-  cardImage.setAttribute('alt', cardParams.name);
-  cardImage.setAttribute('src', cardParams.link);
-  cardElement.setAttribute('id', `card${cardParams._id}`);
-  cardImage.addEventListener('click', openImageFunction)
-  likeButton.addEventListener('click', likeFunction);
-  likeButton.targetElement = cardElement;
   return cardElement;
 }
 
-export function likeCardListener(event) {
-  const likeButtonElement = event.currentTarget;
-  const cardElement = likeButtonElement.targetElement;
-
-  let idCard = cardElement.getAttribute('id');
-  idCard = idCard.replace(/^card/, '');
-  let likeRequest = null
-
-  if (likeButtonElement.classList.contains('card__like-button_is-active')) {
-    likeRequest = likeCardDevDel(idCard);
-  } else {
-    likeRequest = likeCardDev(idCard);
-  }
+export function likeCardListener(cardId, likeButton, likeCounter) {
+  const likeRequest = likeButton.classList.contains('card__like-button_is-active')
+    ? likeCardDevDel(cardId)
+    : likeCardDev(cardId);
 
   likeRequest
     .then((result) => {
-      cardElement.querySelector('.card__like-quantity').textContent = result.likes.length;
-      likeCard(event.target)
+      likeCounter.textContent = result.likes.length;
+      likeButton.classList.toggle('card__like-button_is-active');
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch((err) => console.error(err));
 }
 
-export function likeCard(cardLikeButtonElement) {
-  cardLikeButtonElement.classList.toggle('card__like-button_is-active')
+export function deleteCard(cardId, cardElement) {
+  removeCard(cardId)
+    .then(() => cardElement.remove())
+    .catch((err) => console.error(err));
 }
-
-//Функция удаления карточки
-export function deleteCard(event) {
-  let card = event.currentTarget.targetElement;
-  let idCard = card.getAttribute('id');
-  idCard = idCard.replace(/^card/, '');
-
-  removeCard(idCard)
-    .then((result) => {
-      card.remove();
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}
-
-

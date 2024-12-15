@@ -1,34 +1,32 @@
+const popups = document.querySelectorAll('.popup');
+
 function closeModalWindowEscape(event) {
   if (event.key === 'Escape') {
-    closeModalWindow(document.querySelector('.popup_is-opened'));
+    closeModal(document.querySelector('.popup_is-opened'));
   }
 }
-//открытие модального окна
-export function openModalWindow(modalWindow) {
+
+function overlayMouseClick(event) {
+  if (event.target.classList.contains('popup_is-opened')) {
+    closeModal(event.target);
+  }
+}
+
+// Открытие модального окна
+export function openModal(modalWindow) {
   modalWindow.classList.add('popup_is-opened');
   document.addEventListener('keyup', closeModalWindowEscape);
-  document.addEventListener('mousedown', overlayMouseDown);
-  document.addEventListener('mouseup', overlayMouseUp);
 }
 
-export function closeModalWindow(modalWindow) {
+// Закрытие модального окна
+export function closeModal(modalWindow) {
   modalWindow.classList.remove('popup_is-opened');
   document.removeEventListener('keyup', closeModalWindowEscape);
-  document.removeEventListener('mousedown', overlayMouseDown);
-  document.removeEventListener('mouseup', overlayMouseUp);
 }
 
-
-
-function overlayMouseDown(event) {
-  if (!event.target.classList.contains('popup_is-opened')) return;
-  event.target.isClickOnThis = true;
-}
-
-function overlayMouseUp(event) {
-  if (event.target.isClickOnThis && event.target.classList.contains('popup_is-opened')) {
-    event.preventDefault();
-    closeModalWindow(event.target);
-  }
-  event.target.isClickOnThis = false;
-}
+// Инициализация слушателей для оверлея и кнопок закрытия (один раз)
+popups.forEach((popup) => {
+  popup.addEventListener('mousedown', overlayMouseClick);
+  const closeButton = popup.querySelector('.popup__close');
+  closeButton.addEventListener('click', () => closeModal(popup));
+});
